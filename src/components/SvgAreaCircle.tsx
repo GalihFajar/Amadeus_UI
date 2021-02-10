@@ -19,33 +19,12 @@ import { updateCoordinate } from "../utils/updateCoordinate";
 import useResizeObserver from "../utils/useResizeObserver";
 
 interface SvgAreaCircleProps {
-  size: {
-    height: number;
-    width: number;
-  };
   circle: circleType[];
 }
 
 export const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
-  size,
   circle: initialCircle,
 }) => {
-  // function makeArea<horizontalType, verticalType>(
-  //   horizontal: horizontalType[],
-  //   vertical: verticalType[]
-  // ) {
-  //   let temp: area<horizontalType, verticalType>[] = [];
-  //   for (let i = 0; i < horizontal.length; i++) {
-  //     for (let j = 0; j < vertical.length; j++) {
-  //       temp = [...temp, { x: horizontal[i], y: vertical[j] }];
-  //     }
-  //   }
-  //   return temp;
-  // }
-  // const initializeArea = (areas: areas): void => {
-  //   areas.forEach((area) => (area.violations = 0));
-  // };
-  // const recordCollision: Record<number, number[]> = {};
   const wrapperRef = useRef();
   const clipPathRef = useRef();
   const svgRef = useRef();
@@ -61,10 +40,6 @@ export const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
   const [areas, setAreas] = useState(
     makeArea(horizontalSegmentAxis, verticalSegmentAxis)
   );
-  // console.log(areas);
-  // initializeArea(areas);
-  // console.log(areas);
-
   const horizontalSegmentMap = generateHorizontalSegmentMap(
     horizontalSegment.length
   );
@@ -262,7 +237,6 @@ export const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
       });
       isCollide(temp);
 
-      // console.log("collisionRecord: ", collisionRecord);
       return temp;
     });
   }, 1000);
@@ -270,7 +244,6 @@ export const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
   return (
     <Box w={1024} height={512} ref={wrapperRef}>
       <svg ref={svgRef}>
-        {/* <rect x="113.77604166666667" y="20" height="30" width="30" /> */}
         <g className="tooltip" ref={tooltipRef}></g>
         <g className="tooltip-area" ref={areaTooltipRef} />
         <clipPath ref={clipPathRef} id="clipPath"></clipPath>
