@@ -1,0 +1,21 @@
+svg {
+  overflow: visible;
+  width: 100%;
+  height: 50%;
+}
+
+.tooltip {
+  pointer-events: none;
+  z-index: 2;
+}
+/* svg.circle {
+  overflow: hidden;
+} */
+/* 
+.circle {
+  overflow: hidden;
+}
+
+.x-axis {
+  overflow: visible;
+} */
