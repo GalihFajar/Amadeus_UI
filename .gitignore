@@ -36,3 +36,6 @@ yarn-error.log*
 structures.txt
 .eslintignore
 .eslintrc
+.pretterrc
+next-env.d.ts
+tsconfig.json
