@@ -27,7 +27,7 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
   circle: initialCircle,
 }: SvgAreaCircleProps) => {
   const areaHeight = 7;
-  const areaWidth = 5;
+  const areaWidth = 9;
   const wrapperRef = useRef();
   const clipPathRef = useRef();
   const svgRef = useRef();
@@ -37,7 +37,6 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
 
   const dimensions: DOMRectReadOnly = useResizeObserver(wrapperRef);
   const [circle, setCircle] = useState(initialCircle);
-  const circleSize = 30;
   const horizontalSegmentAxis = Array.from(
     { length: areaWidth },
     (_, i) => i + 1
@@ -84,13 +83,15 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
       .append("rect")
       .attr("x", 0)
       .attr("y", 0)
-      .attr("height", dimensions.width)
+      .attr("height", dimensions.height)
       .attr("width", dimensions.width)
 
       .attr("stroke", "black")
       .style("fill", "none")
       .style("stroke-width", 0.3);
   }, [dimensions]);
+
+  // CIRCLE
   useEffect(() => {
     if (!dimensions) return;
     const svg = select(svgRef.current);
@@ -105,12 +106,11 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
       .domain(extent(verticalSegment))
       .range([dimensions.height, 0]);
     console.log("yScale: ", yScaleLinear(1));
-
     svg
-      .selectAll(".circle")
+      .selectAll(".ellipse")
       .data(circle)
-      .join("circle")
-      .attr("class", "circle")
+      .join("ellipse")
+      .attr("class", "ellipse")
       .style("clip-path", "url(#clipPath)")
       .on("mouseenter", (_, d) => {
         // console.log("d: ", d);
@@ -157,11 +157,23 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
       })
       // .attr("cx", (d) => xScaleLinear(d.x + 1))
       // .attr("cy", (d) => yScaleLinear(d.y + 1))
-      .attr("r", (d) => {
-        const radius = xScaleLinear(d.x + 1) - xScaleLinear(d.x);
-        console.log("radius: ", radius);
-        return radius;
+      .attr("rx", (d) => {
+        const radiusX = xScaleLinear(d.x + 1) - xScaleLinear(d.x);
+        console.log("radiusX: ", radiusX);
+        return radiusX * d.radius;
       })
+      .attr("ry", (d) => {
+        const radiusY = yScaleLinear(d.y) - yScaleLinear(d.y + 1);
+        console.log("radiusY:", radiusY);
+        console.log(d.y + 1, d.y);
+        return radiusY * d.radius;
+      })
+      // .attr("rx", (d) => {
+      //   const radius = xScaleLinear(d.x + 1) - xScaleLinear(d.x);
+      //   console.log("radius: ", radius);
+      //   return radius;
+      // })
+      // .attr("ry", (d) => yScaleLinear(d.y + 1) - yScaleLinear(d.y))
       .attr("stroke", "black")
       .transition()
       .attr("fill", (d) => (d.isCollide ? "red" : colorScale(d.collisions)));
@@ -179,6 +191,7 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
     svg.raise();
   }, [circle, dimensions]);
 
+  //  AREA
   useEffect(() => {
     if (!dimensions) return;
     if (!circle) return;
@@ -326,7 +339,7 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
       isCollide(temp);
       return temp;
     });
-  }, 2000);
+  }, 1000);
 
   return (
     <>
