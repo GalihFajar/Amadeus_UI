@@ -33,7 +33,7 @@ const getPositions = async (): Promise<CircleType[]> => {
       id: parseInt(position.receiverUUID[1], 10),
       x: position.x,
       y: position.y,
-      radius: 1.35,
+      radius: 1.5,
       isCollide: false,
       collideWith: [],
       collisions: 0,

@@ -9,6 +9,7 @@ import {
   scaleSequential,
   select,
 } from "d3";
+import Cookie from "js-cookie";
 import React, { useEffect, useRef, useState } from "react";
 import generateHorizontalSegmentMap from "../constants/constants";
 import { CircleType, Areas } from "../constants/types";
@@ -26,7 +27,7 @@ interface SvgAreaCircleProps {
 const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
   circle: initialCircle,
 }: SvgAreaCircleProps) => {
-  const areaHeight = 7;
+  const areaHeight = 5;
   const areaWidth = 9;
   const wrapperRef = useRef();
   const clipPathRef = useRef();
@@ -36,6 +37,11 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
   const areaTooltipRef = useRef();
 
   const dimensions: DOMRectReadOnly = useResizeObserver(wrapperRef);
+
+  // const horizontalSegmentAxis = [1, 2, 3, 4, 5, 6, 7];
+  // const verticalSegmentAxis = [1, 2, 3, 4, 5];
+  // const horizontalSegment = [1, 2, 3, 4, 5, 6, 7, 8];
+  // const verticalSegment = [1, 2, 3, 4, 5, 6];
   const [circle, setCircle] = useState(initialCircle);
   const horizontalSegmentAxis = Array.from(
     { length: areaWidth },
@@ -53,11 +59,6 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
     ...verticalSegmentAxis,
     verticalSegmentAxis[verticalSegmentAxis.length - 1] + 1,
   ];
-
-  // const horizontalSegmentAxis = [1, 2, 3, 4, 5, 6, 7];
-  // const verticalSegmentAxis = [1, 2, 3, 4, 5];
-  // const horizontalSegment = [1, 2, 3, 4, 5, 6, 7, 8];
-  // const verticalSegment = [1, 2, 3, 4, 5, 6];
   const [focusedCircle, setFocusedCircle] = useState<CircleType>(null);
   const [areas, setAreas] = useState(
     makeArea(horizontalSegmentAxis, verticalSegmentAxis)
@@ -77,6 +78,7 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
 
   useEffect(() => {
     if (!dimensions) return;
+
     // console.log("dimensions: ", dimensions);
     const clipPath = select(clipPathRef.current);
     clipPath
@@ -101,7 +103,7 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
 
     const xScaleLinear = scaleLinear()
       .domain(extent(horizontalSegment))
-      .range([0, dimensions.width]);
+      .range([dimensions.width, 0]);
     const yScaleLinear = scaleLinear()
       .domain(extent(verticalSegment))
       .range([dimensions.height, 0]);
@@ -155,10 +157,10 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
         const tempY: number = roundToNearest(d.y, areaHeight);
         return yScaleLinear(tempY + 1);
       })
-      // .attr("cx", (d) => xScaleLinear(d.x + 1))
-      // .attr("cy", (d) => yScaleLinear(d.y + 1))
+      .attr("cx", (d) => xScaleLinear(d.x + 1))
+      .attr("cy", (d) => yScaleLinear(d.y + 1))
       .attr("rx", (d) => {
-        const radiusX = xScaleLinear(d.x + 1) - xScaleLinear(d.x);
+        const radiusX = -xScaleLinear(d.x + 1) + xScaleLinear(d.x);
         console.log("radiusX: ", radiusX);
         return radiusX * d.radius;
       })
@@ -168,16 +170,18 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
         console.log(d.y + 1, d.y);
         return radiusY * d.radius;
       })
+      // .attr("rx", 10)
+      // .attr("ry", 10)
       // .attr("rx", (d) => {
       //   const radius = xScaleLinear(d.x + 1) - xScaleLinear(d.x);
       //   console.log("radius: ", radius);
       //   return radius;
       // })
       // .attr("ry", (d) => yScaleLinear(d.y + 1) - yScaleLinear(d.y))
-      .attr("stroke", "black")
+      .attr("stroke", "transparent")
       .transition()
-      .attr("fill", (d) => (d.isCollide ? "red" : colorScale(d.collisions)));
-
+      .attr("fill", (d) => (d.isCollide ? "red" : colorScale(d.collisions)))
+      .attr("opacity", 0.5);
     svg
       .selectAll(".tooltipcollisions")
       .data(circle)
@@ -205,7 +209,7 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
       .range([0, dimensions.height]);
     const xScaleLinear = scaleLinear()
       .domain(extent(horizontalSegment))
-      .range([0, dimensions.width]);
+      .range([dimensions.width, 0]);
     const yScaleLinear = scaleLinear()
       .domain(extent(verticalSegment))
       .range([dimensions.height, 0]);
@@ -293,6 +297,8 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
       y: number;
     }[] = getViolationCoordinates(collisionRecord, circle);
     setAreas(updateAreaViolation(areas, violationCoordinates));
+    Cookie.set("areas", areas);
+    console.log("this is the cookie: ", Cookie.getJSON("areas"));
 
     svg
       .selectAll(".area")
