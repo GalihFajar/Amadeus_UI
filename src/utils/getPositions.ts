@@ -3,7 +3,7 @@ import { CircleType } from "../constants/types";
 
 const getPositions = async (): Promise<CircleType[]> => {
   const result = await axios({
-    url: "http://localhost:4000/graphql",
+    url: "http://192.168.137.1:4000/graphql",
     method: "post",
     data: {
       query: `
@@ -31,8 +31,8 @@ const getPositions = async (): Promise<CircleType[]> => {
   const returnedPositions: CircleType[] = positions.map((position) => {
     const p: CircleType = {
       id: parseInt(position.receiverUUID[1], 10),
-      x: position.x,
-      y: position.y,
+      x: position.y,
+      y: position.x,
       radius: 1.5,
       isCollide: false,
       collideWith: [],
