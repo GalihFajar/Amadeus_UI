@@ -1,5 +1,10 @@
 import { CircleType } from "../constants/types";
 
+/**
+ * Mencatat lingkaran mana saja yang berpotongan dengan suatu lingkaran.
+ * @param circles {CircleType[]} Array obyek lingkaran.
+ * @returns Map.
+ */
 const recordCollision = (circles: CircleType[]) => {
   const collisionRecord: Record<number, number[]> = {};
   circles.forEach((circle) => {

@@ -34,8 +34,5 @@ yarn-error.log*
 .vercel
 
 structures.txt
-.eslintignore
-.eslintrc
-.pretterrc
 next-env.d.ts
 tsconfig.json

@@ -33,15 +33,10 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
   const clipPathRef = useRef();
   const svgRef = useRef();
   const tooltipRef = useRef();
-  // const tooltipCollisionsRef = useRef();
   const areaTooltipRef = useRef();
 
   const dimensions: DOMRectReadOnly = useResizeObserver(wrapperRef);
 
-  // const horizontalSegmentAxis = [1, 2, 3, 4, 5, 6, 7];
-  // const verticalSegmentAxis = [1, 2, 3, 4, 5];
-  // const horizontalSegment = [1, 2, 3, 4, 5, 6, 7, 8];
-  // const verticalSegment = [1, 2, 3, 4, 5, 6];
   const [circle, setCircle] = useState(initialCircle);
   const horizontalSegmentAxis = Array.from(
     { length: areaWidth },
@@ -78,8 +73,6 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
 
   useEffect(() => {
     if (!dimensions) return;
-
-    // console.log("dimensions: ", dimensions);
     const clipPath = select(clipPathRef.current);
     clipPath
       .append("rect")
@@ -93,12 +86,14 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
       .style("stroke-width", 0.3);
   }, [dimensions]);
 
-  // CIRCLE
+  /**
+   * CIRCLE HOOK
+   * Hook untuk menggambar serta memperbarui lingkaran.
+   */
   useEffect(() => {
     if (!dimensions) return;
     const svg = select(svgRef.current);
     const tooltip = select(tooltipRef.current);
-    // const tooltipCollisions = select(tooltipCollisionsRef.current);
     const colorScale = scaleSequential([0, 20].reverse(), interpolateRdYlGn);
 
     const xScaleLinear = scaleLinear()
@@ -107,7 +102,6 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
     const yScaleLinear = scaleLinear()
       .domain(extent(verticalSegment))
       .range([dimensions.height, 0]);
-    console.log("yScale: ", yScaleLinear(1));
     svg
       .selectAll(".ellipse")
       .data(circle)
@@ -115,7 +109,6 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
       .attr("class", "ellipse")
       .style("clip-path", "url(#clipPath)")
       .on("mouseenter", (_, d) => {
-        // console.log("d: ", d);
         tooltip
           .selectAll(".tooltip-rect")
           .data([d])
@@ -145,7 +138,6 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
         svg.select(".tooltip-rect").remove();
       })
       .on("click", (_, c) => {
-        console.log(c);
         setFocusedCircle(c);
       })
       .transition()
@@ -161,23 +153,12 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
       .attr("cy", (d) => yScaleLinear(d.y + 1))
       .attr("rx", (d) => {
         const radiusX = -xScaleLinear(d.x + 1) + xScaleLinear(d.x);
-        console.log("radiusX: ", radiusX);
         return radiusX * d.radius;
       })
       .attr("ry", (d) => {
         const radiusY = yScaleLinear(d.y) - yScaleLinear(d.y + 1);
-        console.log("radiusY:", radiusY);
-        console.log(d.y + 1, d.y);
         return radiusY * d.radius;
       })
-      // .attr("rx", 10)
-      // .attr("ry", 10)
-      // .attr("rx", (d) => {
-      //   const radius = xScaleLinear(d.x + 1) - xScaleLinear(d.x);
-      //   console.log("radius: ", radius);
-      //   return radius;
-      // })
-      // .attr("ry", (d) => yScaleLinear(d.y + 1) - yScaleLinear(d.y))
       .attr("stroke", "transparent")
       .transition()
       .attr("fill", (d) => (d.isCollide ? "red" : colorScale(d.collisions)))
@@ -195,7 +176,10 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
     svg.raise();
   }, [circle, dimensions]);
 
-  //  AREA
+  /**
+   * AREA HOOK
+   * Hook untuk menggambar area.
+   */
   useEffect(() => {
     if (!dimensions) return;
     if (!circle) return;
@@ -217,9 +201,6 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
       .domain(verticalSegmentAxis.map((d) => d) as Iterable<string>)
       .range([dimensions.height, 0]);
 
-    // console.log(xScale((3 + 1) as any));
-    // console.log(yScale((4 + 1) as any));
-
     const xAxis = axisBottom(xScale)
       .ticks(horizontalSegment.length)
       .tickFormat((domain) => `${horizontalSegmentMap[domain as any]}`)
@@ -238,12 +219,16 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
       .ticks(verticalSegment.length)
       .tickSizeInner(-dimensions.width);
 
+    /**
+     * Menentukan koordinat tempat terjadinya pelanggaran.
+     * @param collisionRecord {Record<number,number[]>} Map collision antar Circle.
+     * @param circles {CircleType[]} Array berisi obyek Circle.
+     * @returns {Object[]} Objek berupa koordinat area.
+     */
     const getViolationCoordinates = (
       collisionRecord: Record<number, number[]>,
       circles: CircleType[]
     ): { x: number; y: number }[] => {
-      // Caution! This function assumes circle id === index in circles
-
       const violationCoordinates: { x: number; y: number }[] = [];
       Object.entries(collisionRecord).forEach(([key]) => {
         collisionRecord[key].forEach((value: number) => {
@@ -253,34 +238,29 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
           violationCoordinates.push({ x: avgX, y: avgY });
         });
       });
-      console.log("violationCoordinates: ", violationCoordinates);
 
       return violationCoordinates;
     };
 
+    /**
+     * Melakukan pembaruan terhadap jumlah pelanggaran pada suatu area.
+     * @param evaluatedAreas {Areas} Area yang dievaluasi.
+     * @param violationCoordinates {Object[]} Koordinat terjadinya pelanggaran.
+     * @returns Area yang telah diperbarui jumlah pelanggarannya.
+     */
     const updateAreaViolation = (
       evaluatedAreas: Areas,
       violationCoordinates: { x: number; y: number }[]
     ) => {
       const tempAreas = evaluatedAreas;
-      // console.log("violationCoordinates: ", violationCoordinates);
-      console.log("tempAreas: ", tempAreas);
       violationCoordinates.forEach((c) => {
-        // console.log(xScale(tempAreas[0].x as any) + xScale.bandwidth());
-        // console.log(xScale((violationCoordinates[0].x + 1) as any));
         for (let i = 0; i < tempAreas.length; i += 1) {
           const areaX = xScale(tempAreas[i].x as any) + xScale.bandwidth();
           const areaY = yScale(tempAreas[i].y as any) + yScale.bandwidth();
-          // const areaX = xScaleLinear(tempAreas[i].x);
-          // const areaY = yScaleLinear(tempAreas[i].y);
-          console.log("areaX: ", areaX);
-          console.log("areaY: ", areaY);
-          console.log("x,y", xScaleLinear(c.x + 1), yScaleLinear(c.y + 1));
           if (
             areaX >= xScaleLinear(c.x + 1) &&
             areaY >= yScaleLinear(c.y + 1)
           ) {
-            // if (tempAreas[i].x >= c.x && tempAreas[i].x >= c.y) {
             tempAreas[i].violations += 1;
             i = tempAreas.length;
           }
@@ -298,16 +278,12 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
     }[] = getViolationCoordinates(collisionRecord, circle);
     setAreas(updateAreaViolation(areas, violationCoordinates));
     Cookie.set("areas", areas);
-    console.log("this is the cookie: ", Cookie.getJSON("areas"));
 
     svg
       .selectAll(".area")
       .data(areas)
       .join("rect")
       .attr("class", "area")
-      .on("click", (_, { x, y }) => {
-        console.log("area : ", x, y);
-      })
       .attr("x", (d) => xScale(d.x as any))
       .attr("y", (d) => yScale(d.y as any))
       .lower()
@@ -339,6 +315,11 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
 
     svg.select(".y-axis").call(yAxis);
   }, [dimensions, circle]);
+
+  /**
+   * UPDATE HOOK
+   * Hook untuk melakukan update estimasi posisi terakhir yang diterima dari backend.
+   */
   useInterval(async () => {
     const temp = await getPositions();
     setCircle(() => {
@@ -351,18 +332,15 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
     <>
       <div className="container mx-auto my-auto flex w-screen h-screen overflow-visible justify-center">
         <div
-          // style={{ width: "1024px", height: "512px" }}
-          className="overflow-visible h-10/12 w-11/12 p-12"
+          className="overflow-visible h-10/12 w-11/12 p-10 pt-3 mb-5"
           ref={wrapperRef}
         >
-          {/* <div className="h-screen w-screen" ref={wrapperRef}> */}
           <svg
             ref={svgRef}
             className="w-full h-full overflow-visible mx-auto my-auto"
           >
             <g className="tooltip" ref={tooltipRef} />
             <g className="tooltip-area" ref={areaTooltipRef} />
-            {/* <g className="tooltip-collisions" ref={tooltipCollisionsRef} /> */}
             <clipPath ref={clipPathRef} id="clipPath" />
             <g className="vertical-grid" />
             <g className="horizontal-grid" />

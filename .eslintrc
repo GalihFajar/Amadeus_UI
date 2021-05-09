@@ -1,0 +1,13 @@
+{
+  "root": true,
+  "env": {
+    "browser": true,
+    "node": true
+  },
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
+  "extends": ["airbnb-typescript", "prettier"],
+  "parserOptions": {
+    "project": "./Amadeus_UI/tsconfig.json"
+  }
+}

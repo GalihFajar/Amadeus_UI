@@ -1,6 +1,10 @@
 import axios from "axios";
 import { CircleType } from "../constants/types";
 
+/**
+ * Fungsi untuk melakukan fetch pada backend untuk menerima estimasi lokasi terakhir dari setiap lingkaran.
+ * @returns {Promise} Estimasi lokasi terakhir setiap lingkaran.
+ */
 const getPositions = async (): Promise<CircleType[]> => {
   const result = await axios({
     url: "http://192.168.137.1:4000/graphql",
@@ -22,7 +26,6 @@ const getPositions = async (): Promise<CircleType[]> => {
   }: {
     positions: { x: number; y: number; receiverUUID: string }[];
   } = result.data.data;
-  console.log("positions: ", positions);
   positions.sort((a, b) => {
     if (a.receiverUUID < b.receiverUUID) return -1;
     if (a.receiverUUID > b.receiverUUID) return 1;
@@ -40,7 +43,6 @@ const getPositions = async (): Promise<CircleType[]> => {
     };
     return p;
   });
-  console.log(returnedPositions);
   return returnedPositions;
 };
 

@@ -1,5 +1,11 @@
 import { CircleType } from "../constants/types";
 
+/**
+ * Menentukan apakah lingkaran pertama berpotongan dengan lingkaran kedua.
+ * @param circle1 {CircleType} Lingkaran pertama.
+ * @param circle2 {CircleType} Lingkaran kedua.
+ * @returns Boolean.
+ */
 export const isCollideHelper = (
   circle1: CircleType,
   circle2: CircleType
@@ -13,6 +19,10 @@ export const isCollideHelper = (
   return false;
 };
 
+/**
+ * Memodifikasi properti isCollide, collideWith dan collisions pada obyek lingkaran berdasarkan apakah lingkaran berpotongan dengan lingkaran lain.
+ * @param circlesInput {CircleType[]} Array berisi lingkaran-lingkaran yang menjadi subjek pengamatan.
+ */
 export const isCollide = (circlesInput: CircleType[]): void => {
   const circles = circlesInput;
   for (let i = 0; i < circles.length; i += 1) {
