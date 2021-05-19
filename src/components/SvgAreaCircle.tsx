@@ -10,7 +10,6 @@ import {
   select,
 } from "d3";
 import Cookie from "js-cookie";
-import "react-pro-sidebar/dist/css/styles.css";
 import React, { useEffect, useRef, useState } from "react";
 import generateHorizontalSegmentMap from "../constants/constants";
 import { CircleType, Areas, Area } from "../constants/types";
@@ -19,10 +18,10 @@ import makeArea from "../utils/makeArea";
 import recordCollision from "../utils/recordCollision";
 import useResizeObserver from "../utils/useResizeObserver";
 import useInterval from "../utils/useInterval";
-// import getPositions from "../utils/getPositions";
-import getPositionsDummy from "../utils/getPositionsDummy";
+// import getPositionsDummy from "../utils/getPositionsDummy";
 import Modals from "./Modals";
 import useStore from "../utils/useStore";
+import getPositions from "../utils/getPositions";
 // import RenderTest from "../utils/renderTest";
 
 interface SvgAreaCircleProps {
@@ -61,6 +60,7 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
   ];
   const [focusedCircle, setFocusedCircle] = useState<CircleType>(null);
   const [focusedArea, setFocusedArea] = useState<Area<number, number>>(null);
+  const [focusedAreaCoordinate, setFocusedAreaCoordinate] = useState(null);
   const { showModal } = useStore();
   const [areas, setAreas] = useState(
     makeArea(horizontalSegmentAxis, verticalSegmentAxis)
@@ -299,6 +299,9 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
       .on("click", (_, a) => {
         setFocusedCircle(null);
         setFocusedArea(a);
+        setFocusedAreaCoordinate(
+          `${horizontalSegmentMap[a.x]}${Math.abs(areaHeight + 1 - a.y)}`
+        );
         showModal();
       })
       .lower()
@@ -339,9 +342,9 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
     // const startTime = performance.now();
     let temp: CircleType[];
     if (circle.length <= 0) {
-      temp = await getPositionsDummy();
+      temp = await getPositions();
     } else {
-      temp = await getPositionsDummy();
+      temp = await getPositions(circle);
     }
     setCircle(() => {
       isCollide(temp);
@@ -359,11 +362,22 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
           title={
             focusedCircle === null ? "Area Violations" : "Subject Violations"
           }
-          focusedCircle={{
-            violations: focusedCircle?.collisions,
-            id: focusedCircle?.id,
-          }}
-          focusedArea={{ violations: focusedArea?.violations }}
+          focusedCircle={
+            focusedCircle !== null
+              ? {
+                  violations: focusedCircle?.collisions,
+                  id: focusedCircle?.id,
+                }
+              : null
+          }
+          focusedArea={
+            focusedArea !== null
+              ? { violations: focusedArea?.violations }
+              : null
+          }
+          focusedAreaCoordinate={
+            focusedAreaCoordinate === null ? null : focusedAreaCoordinate
+          }
         />
         <div
           className="overflow-visible h-10/12 w-11/12 p-10 pt-3 mb-5 z-0 relative"
