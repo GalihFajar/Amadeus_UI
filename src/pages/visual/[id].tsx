@@ -19,7 +19,9 @@ const Visualization = () => {
       <div className="flex justify-center">
         <h1 className="text-3xl">Social Distancing Violation</h1>
       </div>
-      <SvgAreaCircle circle={initialCircle} />
+      <div>
+        <SvgAreaCircle circle={initialCircle} />
+      </div>
     </>
   );
 };

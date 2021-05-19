@@ -10,15 +10,20 @@ import {
   select,
 } from "d3";
 import Cookie from "js-cookie";
+import "react-pro-sidebar/dist/css/styles.css";
 import React, { useEffect, useRef, useState } from "react";
 import generateHorizontalSegmentMap from "../constants/constants";
-import { CircleType, Areas } from "../constants/types";
+import { CircleType, Areas, Area } from "../constants/types";
 import { isCollide } from "../utils/isCollide";
 import makeArea from "../utils/makeArea";
 import recordCollision from "../utils/recordCollision";
 import useResizeObserver from "../utils/useResizeObserver";
 import useInterval from "../utils/useInterval";
-import getPositions from "../utils/getPositions";
+// import getPositions from "../utils/getPositions";
+import getPositionsDummy from "../utils/getPositionsDummy";
+import Modals from "./Modals";
+import useStore from "../utils/useStore";
+// import RenderTest from "../utils/renderTest";
 
 interface SvgAreaCircleProps {
   circle: CircleType[];
@@ -55,9 +60,12 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
     verticalSegmentAxis[verticalSegmentAxis.length - 1] + 1,
   ];
   const [focusedCircle, setFocusedCircle] = useState<CircleType>(null);
+  const [focusedArea, setFocusedArea] = useState<Area<number, number>>(null);
+  const { showModal } = useStore();
   const [areas, setAreas] = useState(
     makeArea(horizontalSegmentAxis, verticalSegmentAxis)
   );
+
   const horizontalSegmentMap = generateHorizontalSegmentMap(
     horizontalSegment.length
   );
@@ -138,7 +146,9 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
         svg.select(".tooltip-rect").remove();
       })
       .on("click", (_, c) => {
+        setFocusedArea(null);
         setFocusedCircle(c);
+        showModal();
       })
       .transition()
       .attr("cx", (d) => {
@@ -286,6 +296,11 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
       .attr("class", "area")
       .attr("x", (d) => xScale(d.x as any))
       .attr("y", (d) => yScale(d.y as any))
+      .on("click", (_, a) => {
+        setFocusedCircle(null);
+        setFocusedArea(a);
+        showModal();
+      })
       .lower()
       .attr("fill", (d) => colorScale(d.violations))
       .attr("stroke", "none")
@@ -321,18 +336,37 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
    * Hook untuk melakukan update estimasi posisi terakhir yang diterima dari backend.
    */
   useInterval(async () => {
-    const temp = await getPositions();
+    // const startTime = performance.now();
+    let temp: CircleType[];
+    if (circle.length <= 0) {
+      temp = await getPositionsDummy();
+    } else {
+      temp = await getPositionsDummy();
+    }
     setCircle(() => {
       isCollide(temp);
       return temp;
     });
-  }, 1000);
+    // RenderTest.test(circle);
+    // const endTime = performance.now();
+    // console.log(`Data fetched and rendered in ${endTime - startTime}ms`);
+  }, 2000);
 
   return (
     <>
       <div className="container mx-auto my-auto flex w-screen h-screen overflow-visible justify-center">
+        <Modals
+          title={
+            focusedCircle === null ? "Area Violations" : "Subject Violations"
+          }
+          focusedCircle={{
+            violations: focusedCircle?.collisions,
+            id: focusedCircle?.id,
+          }}
+          focusedArea={{ violations: focusedArea?.violations }}
+        />
         <div
-          className="overflow-visible h-10/12 w-11/12 p-10 pt-3 mb-5"
+          className="overflow-visible h-10/12 w-11/12 p-10 pt-3 mb-5 z-0 relative"
           ref={wrapperRef}
         >
           <svg
@@ -347,14 +381,6 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
             <g className="x-axis" />
             <g className="y-axis" />
           </svg>
-        </div>
-        <div>
-          {focusedCircle ? (
-            <div>
-              <p>Number of collisions: {focusedCircle.collisions}</p>
-              <p>Circleid: {focusedCircle.id}</p>
-            </div>
-          ) : null}
         </div>
       </div>
     </>

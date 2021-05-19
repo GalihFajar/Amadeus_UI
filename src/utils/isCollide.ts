@@ -32,6 +32,7 @@ export const isCollide = (circlesInput: CircleType[]): void => {
   for (let i = 0; i < circles.length; i += 1) {
     for (let j = 0; j < circles.length; j += 1) {
       if (isCollideHelper(circles[i], circles[j]) && i !== j) {
+        console.log(circles[i]);
         circles[i].isCollide = true;
         circles[i].collideWith.push(circles[j].id);
         circles[i].collisions += 1;
