@@ -18,10 +18,10 @@ import makeArea from "../utils/makeArea";
 import recordCollision from "../utils/recordCollision";
 import useResizeObserver from "../utils/useResizeObserver";
 import useInterval from "../utils/useInterval";
-// import getPositionsDummy from "../utils/getPositionsDummy";
 import Modals from "./Modals";
 import useStore from "../utils/useStore";
-import getPositions from "../utils/getPositions";
+// import getPositions from "../utils/getPositions";
+import getPositionsDummy from "../utils/getPositionsDummy";
 // import RenderTest from "../utils/renderTest";
 
 interface SvgAreaCircleProps {
@@ -40,6 +40,8 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
   const areaTooltipRef = useRef();
 
   const dimensions: DOMRectReadOnly = useResizeObserver(wrapperRef);
+
+  const [index, setIndex] = useState(0);
 
   const [circle, setCircle] = useState(initialCircle);
   const horizontalSegmentAxis = Array.from(
@@ -339,21 +341,23 @@ const SvgAreaCircle: React.FC<SvgAreaCircleProps> = ({
    * Hook untuk melakukan update estimasi posisi terakhir yang diterima dari backend.
    */
   useInterval(async () => {
-    // const startTime = performance.now();
     let temp: CircleType[];
     if (circle.length <= 0) {
-      temp = await getPositions();
+      temp = await getPositionsDummy(undefined, index);
     } else {
-      temp = await getPositions(circle);
+      temp = await getPositionsDummy(circle, index);
     }
+    // eslint-disable-next-line no-plusplus
+    const last = index + 1;
+    setIndex(last);
+
+    // console.log("increment: ", increment);
     setCircle(() => {
       isCollide(temp);
       return temp;
     });
     // RenderTest.test(circle);
-    // const endTime = performance.now();
-    // console.log(`Data fetched and rendered in ${endTime - startTime}ms`);
-  }, 2000);
+  }, 1000);
 
   return (
     <>
